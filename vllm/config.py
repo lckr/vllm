@@ -117,6 +117,8 @@ class ModelConfig:
             the default version.
         max_model_len: Maximum length of a sequence (including prompt and
             output). If None, will be derived from the model.
+        return_hidden_states: Whether the model should return hidden states with
+            each token.
         spec_target_max_model_len: Specify the the maximum length for spec
             decoding draft models.
         quantization: Quantization method that was used to quantize the model
@@ -192,43 +194,44 @@ class ModelConfig:
         factors.append(self.rope_theta)
         return hashlib.sha256(str(factors).encode()).hexdigest()
 
-    def __init__(
-        self,
-        model: str,
-        task: Union[TaskOption, Literal["draft"]],
-        tokenizer: str,
-        tokenizer_mode: str,
-        trust_remote_code: bool,
-        dtype: Union[str, torch.dtype],
-        seed: int,
-        allowed_local_media_path: str = "",
-        revision: Optional[str] = None,
-        code_revision: Optional[str] = None,
-        rope_scaling: Optional[Dict[str, Any]] = None,
-        rope_theta: Optional[float] = None,
-        tokenizer_revision: Optional[str] = None,
-        max_model_len: Optional[int] = None,
-        spec_target_max_model_len: Optional[int] = None,
-        quantization: Optional[str] = None,
-        enforce_eager: Optional[bool] = None,
-        max_seq_len_to_capture: Optional[int] = None,
-        max_logprobs: int = 20,
-        disable_sliding_window: bool = False,
-        skip_tokenizer_init: bool = False,
-        served_model_name: Optional[Union[str, List[str]]] = None,
-        limit_mm_per_prompt: Optional[Mapping[str, int]] = None,
-        use_async_output_proc: bool = True,
-        config_format: ConfigFormat = ConfigFormat.AUTO,
-        hf_overrides: Optional[HfOverrides] = None,
-        mm_processor_kwargs: Optional[Dict[str, Any]] = None,
-        disable_mm_preprocessor_cache: bool = False,
-        override_neuron_config: Optional[Dict[str, Any]] = None,
-        override_pooler_config: Optional["PoolerConfig"] = None,
-        logits_processor_pattern: Optional[str] = None,
-        generation_config: Optional[str] = None,
-        enable_sleep_mode: bool = False,
-        override_generation_config: Optional[Dict[str, Any]] = None,
-    ) -> None:
+    def __init__(self,
+                 model: str,
+                 task: Union[TaskOption, Literal["draft"]],
+                 tokenizer: str,
+                 tokenizer_mode: str,
+                 trust_remote_code: bool,
+                 dtype: Union[str, torch.dtype],
+                 seed: int,
+                 allowed_local_media_path: str = "",
+                 revision: Optional[str] = None,
+                 code_revision: Optional[str] = None,
+                 rope_scaling: Optional[Dict[str, Any]] = None,
+                 rope_theta: Optional[float] = None,
+                 tokenizer_revision: Optional[str] = None,
+                 max_model_len: Optional[int] = None,
+                 return_hidden_states: Optional[bool] = None,
+                 spec_target_max_model_len: Optional[int] = None,
+                 quantization: Optional[str] = None,
+                 quantization_param_path: Optional[str] = None,
+                 enforce_eager: Optional[bool] = None,
+                 max_seq_len_to_capture: Optional[int] = None,
+                 max_logprobs: int = 20,
+                 disable_sliding_window: bool = False,
+                 skip_tokenizer_init: bool = False,
+                 served_model_name: Optional[Union[str, List[str]]] = None,
+                 limit_mm_per_prompt: Optional[Mapping[str, int]] = None,
+                 use_async_output_proc: bool = True,
+                 config_format: ConfigFormat = ConfigFormat.AUTO,
+                 hf_overrides: Optional[HfOverrides] = None,
+                 mm_processor_kwargs: Optional[Dict[str, Any]] = None,
+                 disable_mm_preprocessor_cache: bool = False,
+                 override_neuron_config: Optional[Dict[str, Any]] = None,
+                 override_pooler_config: Optional["PoolerConfig"] = None,
+                 logits_processor_pattern: Optional[str] = None,
+                 generation_config: Optional[str] = None,
+                 enable_sleep_mode: bool = False,
+                 override_generation_config: Optional[Dict[str, Any]] = None,
+        ) -> None:
         self.model = model
         self.tokenizer = tokenizer
         self.tokenizer_mode = tokenizer_mode
@@ -273,6 +276,7 @@ class ModelConfig:
         self.quantization = quantization
         self.enforce_eager = enforce_eager
         self.max_seq_len_to_capture = max_seq_len_to_capture
+        self.return_hidden_states = return_hidden_states
         self.max_logprobs = max_logprobs
         self.disable_sliding_window = disable_sliding_window
         self.skip_tokenizer_init = skip_tokenizer_init

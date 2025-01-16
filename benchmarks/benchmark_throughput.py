@@ -192,11 +192,15 @@ def run_vllm(
 
     if not use_beam_search:
         start = time.perf_counter()
-        llm.generate(prompts,
-                     sampling_params,
-                     lora_request=lora_requests,
-                     use_tqdm=True)
+        out = llm.generate(prompts,
+                           sampling_params,
+                           lora_request=lora_requests,
+                           use_tqdm=True)
         end = time.perf_counter()
+        if engine_args.return_hidden_states:  # TODO: Do not commit to upstream
+            for completion in out:
+                assert (completion.outputs[0].hidden_states.shape[0] == len(
+                    completion.outputs[0].token_ids))
     else:
         assert lora_requests is None, "BeamSearch API does not support LoRA"
         prompts = [request.prompt for request in requests]
