@@ -31,6 +31,7 @@ class CompletionOutput:
             to stop, None if the completion finished for some other reason
             including encountering the EOS token.
         lora_request: The LoRA request that was used to generate the output.
+        hidden_states: The model hidden states for the completion tokens.
     """
 
     index: int
@@ -41,6 +42,7 @@ class CompletionOutput:
     finish_reason: Optional[str] = None
     stop_reason: Union[int, str, None] = None
     lora_request: Optional[LoRARequest] = None
+    hidden_states: Optional[torch.Tensor] = None
 
     def finished(self) -> bool:
         return self.finish_reason is not None
@@ -52,7 +54,10 @@ class CompletionOutput:
                 f"cumulative_logprob={self.cumulative_logprob}, "
                 f"logprobs={self.logprobs}, "
                 f"finish_reason={self.finish_reason}, "
-                f"stop_reason={self.stop_reason})")
+                f"stop_reason={self.stop_reason}), "
+                "hidden_states="
+                f"Tensor({self.hidden_states.shape}))"
+                if self.hidden_states is not None else "None)")
 
 
 @dataclass
@@ -101,6 +106,8 @@ class RequestOutput:
         encoder_prompt_token_ids: The token IDs of the encoder prompt.
                                   None if decoder-only.
         num_cached_tokens: The number of tokens with prefix cache hit.
+        prompt_hidden_states: Model hidden states for the request prompt
+                              tokens.
     """
 
     def __init__(
@@ -116,6 +123,7 @@ class RequestOutput:
         encoder_prompt: Optional[str] = None,
         encoder_prompt_token_ids: Optional[List[int]] = None,
         num_cached_tokens: Optional[int] = None,
+        prompt_hidden_states: Optional[torch.Tensor] = None,
         *,
         multi_modal_placeholders: Optional[MultiModalPlaceholderDict] = None,
     ) -> None:
@@ -131,6 +139,7 @@ class RequestOutput:
         self.encoder_prompt = encoder_prompt
         self.encoder_prompt_token_ids = encoder_prompt_token_ids
         self.num_cached_tokens = num_cached_tokens
+        self.prompt_hidden_states = prompt_hidden_states
 
     @classmethod
     def new(
@@ -244,7 +253,8 @@ class RequestOutput:
                                          cumulative_logprob=None,
                                          logprobs=None,
                                          finish_reason=None,
-                                         stop_reason=None))
+                                         stop_reason=None,
+                                         hidden_states=None))
                 output = cached_outputs[i]
 
                 # Init cached output object
@@ -263,6 +273,7 @@ class RequestOutput:
                 output.finish_reason = SequenceStatus.get_finished_reason(
                     seq.status)
                 output.stop_reason = seq.stop_reason
+                output.hidden_states = seq.hidden_states
 
             else:
                 output = CompletionOutput(
@@ -271,7 +282,7 @@ class RequestOutput:
                     seq.get_cumulative_logprob() if include_logprobs else None,
                     output_logprobs,
                     SequenceStatus.get_finished_reason(seq.status),
-                    seq.stop_reason)
+                    seq.stop_reason, None, seq.hidden_states)
 
             outputs.append(output)
 
@@ -303,6 +314,7 @@ class RequestOutput:
             "encoder_prompt": encoder_prompt,
             "encoder_prompt_token_ids": encoder_prompt_token_ids,
             "num_cached_tokens": num_cached_tokens,
+            "prompt_hidden_states": seq_group.prompt_hidden_states,
             "multi_modal_placeholders": seq_group.multi_modal_placeholders
         }
 
@@ -326,6 +338,9 @@ class RequestOutput:
                 f"metrics={self.metrics}, "
                 f"lora_request={self.lora_request}, "
                 f"num_cached_tokens={self.num_cached_tokens}, "
+                "prompt_hidden_states="
+                f"Tensor({self.prompt_hidden_states.shape}))"
+                if self.prompt_hidden_states is not None else "None), "
                 f"multi_modal_placeholders={self.multi_modal_placeholders})")
 
 

@@ -41,11 +41,18 @@ def main(args: argparse.Namespace):
         "prompt_token_ids": batch
     } for batch in dummy_prompt_token_ids.tolist()]
 
-    def llm_generate():
+    def llm_generate() -> float:
         if not args.use_beam_search:
-            llm.generate(dummy_prompts,
-                         sampling_params=sampling_params,
-                         use_tqdm=False)
+            out = llm.generate(dummy_prompts,
+                               sampling_params=sampling_params,
+                               use_tqdm=False)
+            end_time = time.perf_counter()
+            if args.return_hidden_states:  # TODO: Do not commit this to upstream
+                for completion in out:
+                    assert (
+                        completion.outputs[0].hidden_states.shape[0] == len(
+                            completion.outputs[0].token_ids))
+
         else:
             llm.beam_search(
                 dummy_prompts,
@@ -54,6 +61,8 @@ def main(args: argparse.Namespace):
                     max_tokens=args.output_len,
                     ignore_eos=True,
                 ))
+            end_time = time.perf_counter()
+        return end_time
 
     def run_to_completion(profile_dir: Optional[str] = None):
         if profile_dir:
@@ -68,8 +77,7 @@ def main(args: argparse.Namespace):
             print(p.key_averages().table(sort_by="self_cuda_time_total"))
         else:
             start_time = time.perf_counter()
-            llm_generate()
-            end_time = time.perf_counter()
+            end_time = llm_generate()
             latency = end_time - start_time
             return latency
 
