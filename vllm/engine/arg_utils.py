@@ -101,6 +101,7 @@ class EngineArgs:
     quantization_param_path: Optional[str] = None
     seed: int = 0
     max_model_len: Optional[int] = None
+    return_hidden_states: bool = False
     worker_use_ray: bool = False
     # Note: Specifying a custom executor backend by passing a class
     # is intended for expert use only. The API may change without
@@ -713,6 +714,11 @@ class EngineArgs:
             const="True",
             help='If set, the prefill requests can be chunked based on the '
             'max_num_batched_tokens.')
+        parser.add_argument(
+            '--return-hidden-states',
+            action='store_true',
+            default=False,
+            help='Return hidden states from the model.')
 
         parser.add_argument(
             '--speculative-model',
@@ -983,6 +989,7 @@ class EngineArgs:
             hf_overrides=self.hf_overrides,
             tokenizer_revision=self.tokenizer_revision,
             max_model_len=self.max_model_len,
+            return_hidden_states=self.return_hidden_states,
             quantization=self.quantization,
             quantization_param_path=self.quantization_param_path,
             enforce_eager=self.enforce_eager,
