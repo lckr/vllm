@@ -1075,7 +1075,7 @@ class CompletionSequenceGroupOutput(
     prompt_logprobs: Optional[PromptLogprobs]
     prompt_hidden_states: Optional[torch.Tensor] = None
     hidden_state: Optional[torch.Tensor] = None
-    
+
     def __repr__(self) -> str:
         return (f"CompletionSequenceGroupOutput(samples={self.samples}, "
                 f"prompt_logprobs={self.prompt_logprobs})")

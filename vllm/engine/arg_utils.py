@@ -714,11 +714,10 @@ class EngineArgs:
             const="True",
             help='If set, the prefill requests can be chunked based on the '
             'max_num_batched_tokens.')
-        parser.add_argument(
-            '--return-hidden-states',
-            action='store_true',
-            default=False,
-            help='Return hidden states from the model.')
+        parser.add_argument('--return-hidden-states',
+                            action='store_true',
+                            default=False,
+                            help='Return hidden states from the model.')
 
         parser.add_argument(
             '--speculative-model',

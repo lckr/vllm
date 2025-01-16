@@ -7,7 +7,6 @@ from typing import Union
 import torch
 from typing_extensions import TypeVar, deprecated
 
-
 from vllm.lora.request import LoRARequest
 from vllm.multimodal.inputs import MultiModalPlaceholderDict
 from vllm.sampling_params import RequestOutputKind
@@ -43,7 +42,7 @@ class CompletionOutput:
     finish_reason: Optional[str] = None
     stop_reason: Union[int, str, None] = None
     lora_request: Optional[LoRARequest] = None
-    hidden_states: Optional[torch.Tensor]
+    hidden_states: Optional[torch.Tensor] = None
 
     def finished(self) -> bool:
         return self.finish_reason is not None
@@ -140,6 +139,7 @@ class RequestOutput:
         self.encoder_prompt = encoder_prompt
         self.encoder_prompt_token_ids = encoder_prompt_token_ids
         self.num_cached_tokens = num_cached_tokens
+        self.prompt_hidden_states = prompt_hidden_states
 
     @classmethod
     def new(

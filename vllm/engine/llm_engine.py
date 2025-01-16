@@ -1002,7 +1002,7 @@ class LLMEngine:
             # [sequence group][step].
             outputs_by_sequence_group = create_output_by_sequence_group(
                 outputs,
-                num_seq_groups=len(seq_group_metadata_list),
+                scheduled_seq_groups=scheduler_outputs.scheduled_seq_groups,
                 return_hidden_states=self.model_config.return_hidden_states)
             # We have outputs for multiple steps submitted in a single burst,
             # so invalidate is_first_step_output.
