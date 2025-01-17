@@ -997,7 +997,7 @@ class LLMEngine:
         outputs_by_sequence_group: List[List[SequenceGroupOutput]]
         if has_multiple_outputs or self.model_config.return_hidden_states:
             assert self.scheduler_config.is_multi_step or \
-                     self.speculative_config
+                     self.speculative_config or self.model_config.return_hidden_states
             # Organize outputs by [step][sequence group] instead of
             # [sequence group][step].
             outputs_by_sequence_group = create_output_by_sequence_group(

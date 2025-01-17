@@ -32,16 +32,27 @@ def create_output_by_sequence_group(
                     seq_group_offset = sum(input_lengths[:i])
                     seq_group_input_length = len(
                         scheduled_seq_groups[i].seq_group.seqs[0].
-                        inputs['prompt_token_ids'])
+                        inputs.prompt_token_ids)
                     seq_group_end = seq_group_offset + seq_group_input_length
                     sequence_group_output.prompt_hidden_states = (
                         step.prefill_hidden_states[
                             seq_group_offset:seq_group_end].clone().cpu())
                     input_lengths.append(seq_group_input_length)
-                # `SamplerOutput.hidden_states` are shape [n_seqs, hidden_size].
-                sequence_group_output.hidden_state = (
-                    step.hidden_states[i, :].clone().cpu().unsqueeze(0))
+                if ((i ) < len(step) -1) and (sequence_group_output.samples):
+                    # TODO: Seems like some seq outputs do have an empty sample list, in this case
+                    # `SamplerOutput.hidden_states` are shape [n_seqs-1, hidden_size].
+                    # Check if this is correct. Why can we have seq_outputs w/o samples?    
+                    
+                    # `SamplerOutput.hidden_states` are shape [n_seqs, hidden_size].
+                    try:
+                        sequence_group_output.hidden_state = (
+                            step.hidden_states[i, :].clone().cpu().unsqueeze(0))         
+                    except:
+                        import ipdb; ipdb.set_trace()
+                else:
+                    print("Trailing empty seq output")
 
+            output_by_sequence_group[i].append(sequence_group_output)
     # Cast to the more generic type that CompletionSequenceGroupOutput
     # inherits from.
     return cast(List[List[SequenceGroupOutput]], output_by_sequence_group)
