@@ -282,7 +282,7 @@ class RequestOutput:
                     seq.get_cumulative_logprob() if include_logprobs else None,
                     output_logprobs,
                     SequenceStatus.get_finished_reason(seq.status),
-                    seq.stop_reason, None, seq_group.prompt_hidden_states)
+                    seq.stop_reason, None, seq.hidden_states)
 
             outputs.append(output)
 
